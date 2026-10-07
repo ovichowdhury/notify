@@ -1,0 +1,64 @@
+# Notify with Docker Compose.
+#
+#   docker compose up -d --build        # start (app on http://localhost:5600, Mailpit UI on http://localhost:8025)
+#   docker compose logs -f notify       # follow application logs
+#   docker compose down                 # stop; data stays in the named volumes
+#   docker compose down -v              # stop AND delete the database, keys and logos
+#
+# Copy .env.example to .env to change the admin seed credentials or ports.
+
+name: notify
+
+services:
+  notify:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: notify:local
+    container_name: notify
+    restart: unless-stopped
+    ports:
+      - "${NOTIFY_PORT:-5600}:5600"
+    environment:
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Production}
+      ConnectionStrings__DefaultConnection: "Data Source=/app/App_Data/notify.db"
+      SeedAdmin__Email: ${SEED_ADMIN_EMAIL:-admin@notify.local}
+      SeedAdmin__Password: ${SEED_ADMIN_PASSWORD:-Admin@12345}
+      SeedAdmin__CompanyName: ${SEED_ADMIN_COMPANY:-Notify Administrator}
+    volumes:
+      # SQLite database + Data Protection keys (encrypt stored SMTP passwords). Keep this volume.
+      - notify-data:/app/App_Data
+      # Uploaded company logos.
+      - notify-uploads:/app/wwwroot/uploads
+    depends_on:
+      mailpit:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:5600/Account/Login"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  # Local SMTP catch-all for testing campaigns without a real mail provider.
+  # In Notify's SMTP settings use: Host = mailpit, Port = 1025, Security = None, no username/password.
+  # Every message Notify sends appears in the Mailpit inbox at http://localhost:8025.
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: notify-mailpit
+    restart: unless-stopped
+    ports:
+      - "${MAILPIT_SMTP_PORT:-1025}:1025"
+      - "${MAILPIT_UI_PORT:-8025}:8025"
+    environment:
+      MP_MAX_MESSAGES: 5000
+      MP_SMTP_AUTH_ACCEPT_ANY: 1
+      MP_SMTP_AUTH_ALLOW_INSECURE: 1
+    volumes:
+      - mailpit-data:/data
+    command: ["--database", "/data/mailpit.db"]
+
+volumes:
+  notify-data:
+  notify-uploads:
+  mailpit-data:

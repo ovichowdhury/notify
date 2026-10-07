@@ -1,0 +1,126 @@
+@model SmtpSettingsViewModel
+@{
+    ViewData["Title"] = "SMTP settings";
+    var testModel = ViewBag.TestModel as TestSmtpViewModel ?? new TestSmtpViewModel();
+}
+
+<div class="mb-6">
+    <h2 class="text-2xl font-bold tracking-tight text-slate-900">SMTP settings</h2>
+    <p class="mt-1 text-sm text-slate-600">Campaign emails are sent through this server. These settings belong to your account only.</p>
+</div>
+
+<div class="grid gap-6 lg:grid-cols-3">
+    <form asp-action="Smtp" method="post" class="space-y-6 lg:col-span-2">
+        <div asp-validation-summary="ModelOnly"></div>
+
+        <div class="card">
+            <div class="card-header"><h3 class="card-title">Server</h3></div>
+            <div class="card-body grid gap-5 sm:grid-cols-6">
+                <div class="sm:col-span-3">
+                    <label asp-for="Host" class="label"></label>
+                    <input asp-for="Host" class="input" placeholder="smtp.example.com" />
+                    <span asp-validation-for="Host"></span>
+                </div>
+                <div class="sm:col-span-1">
+                    <label asp-for="Port" class="label"></label>
+                    <input asp-for="Port" class="input" />
+                    <span asp-validation-for="Port"></span>
+                </div>
+                <div class="sm:col-span-2">
+                    <label asp-for="Security" class="label"></label>
+                    <select asp-for="Security" class="input" asp-items="Html.GetEnumSelectList<SmtpSecurity>()"></select>
+                </div>
+                <div class="sm:col-span-3">
+                    <label asp-for="Username" class="label"></label>
+                    <input asp-for="Username" class="input" autocomplete="off" />
+                    <p class="hint">Leave empty if the server does not require authentication.</p>
+                    <span asp-validation-for="Username"></span>
+                </div>
+                <div class="sm:col-span-3">
+                    <label asp-for="Password" class="label"></label>
+                    <input asp-for="Password" class="input" autocomplete="new-password" placeholder="@(Model.HasSavedPassword ? "•••••••• (unchanged)" : "")" />
+                    <p class="hint">@(Model.HasSavedPassword ? "A password is saved. Leave blank to keep it." : "Stored encrypted at rest.")</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header"><h3 class="card-title">Sender identity</h3></div>
+            <div class="card-body grid gap-5 sm:grid-cols-2">
+                <div>
+                    <label asp-for="FromEmail" class="label"></label>
+                    <input asp-for="FromEmail" class="input" placeholder="marketing@company.com" />
+                    <span asp-validation-for="FromEmail"></span>
+                </div>
+                <div>
+                    <label asp-for="FromName" class="label"></label>
+                    <input asp-for="FromName" class="input" placeholder="Your Company" />
+                    <span asp-validation-for="FromName"></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Sending throughput</h3>
+                <span class="badge bg-slate-50 text-slate-600 ring-slate-200">Concurrency</span>
+            </div>
+            <div class="card-body grid gap-5 sm:grid-cols-2">
+                <div>
+                    <label asp-for="ConcurrencyLevel" class="label"></label>
+                    <input asp-for="ConcurrencyLevel" class="input" type="number" min="1" max="50" />
+                    <p class="hint">Parallel SMTP connections used while sending (1 to 50). Check the limits of your provider.</p>
+                    <span asp-validation-for="ConcurrencyLevel"></span>
+                </div>
+                <div>
+                    <label asp-for="DelayBetweenEmailsMs" class="label"></label>
+                    <input asp-for="DelayBetweenEmailsMs" class="input" type="number" min="0" max="60000" step="50" />
+                    <p class="hint">Optional pause after each email on every connection, for rate-limited providers.</p>
+                    <span asp-validation-for="DelayBetweenEmailsMs"></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex items-center justify-between gap-3">
+            <span class="text-xs text-slate-500">
+                @if (Model.UpdatedAt is not null) { <text>Last saved @Model.UpdatedAt.Value.ToLocalTime().ToString("g")</text> }
+            </span>
+            <button type="submit" class="btn btn-primary">Save settings</button>
+        </div>
+    </form>
+
+    <div class="space-y-6">
+        <div class="card">
+            <div class="card-header"><h3 class="card-title">Send a test email</h3></div>
+            <div class="card-body">
+                <p class="mb-4 text-sm text-slate-600">Uses the saved settings. Save first if you changed anything.</p>
+                <form asp-action="TestSmtp" method="post" class="space-y-3">
+                    <div>
+                        <label class="label" for="ToEmail">Send test email to</label>
+                        <input class="input" id="ToEmail" name="ToEmail" type="email" value="@testModel.ToEmail" required />
+                    </div>
+                    <button type="submit" class="btn btn-secondary w-full" @(Model.UpdatedAt is null ? "disabled" : "")>
+                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" /></svg>
+                        Send test
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header"><h3 class="card-title">Common configurations</h3></div>
+            <div class="card-body">
+                <dl class="space-y-3 text-sm">
+                    <div class="flex items-start justify-between gap-3"><dt class="text-slate-600">Most providers</dt><dd class="font-medium text-slate-900">587 · StartTls</dd></div>
+                    <div class="flex items-start justify-between gap-3"><dt class="text-slate-600">Implicit TLS</dt><dd class="font-medium text-slate-900">465 · SslOnConnect</dd></div>
+                    <div class="flex items-start justify-between gap-3"><dt class="text-slate-600">Internal relay</dt><dd class="font-medium text-slate-900">25 · None</dd></div>
+                </dl>
+                <p class="mt-4 text-xs text-slate-500">Gmail and Microsoft 365 require an app password or SMTP AUTH to be enabled on the mailbox.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

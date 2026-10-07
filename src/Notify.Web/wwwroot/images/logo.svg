@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 160" width="560" height="160" role="img" aria-label="Notify">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#6366f1"/>
+      <stop offset="1" stop-color="#4338ca"/>
+    </linearGradient>
+  </defs>
+  <g transform="scale(0.3125)">
+    <rect width="512" height="512" rx="112" fill="url(#bg)"/>
+    <polygon points="108,232 404,108 262,296" fill="#ffffff"/>
+    <polygon points="262,296 404,108 290,404" fill="#ffffff" fill-opacity="0.72"/>
+  </g>
+  <text x="192" y="110" font-family="Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="92" font-weight="800" letter-spacing="-3" fill="#0f172a">Notify</text>
+</svg>

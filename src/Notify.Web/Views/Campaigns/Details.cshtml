@@ -1,0 +1,266 @@
+@model CampaignDetailsViewModel
+@{
+    ViewData["Title"] = Model.Campaign.Name;
+    var c = Model.Campaign;
+    var counts = Model.Counts;
+    var canRun = !c.IsActive && Model.SmtpConfigured && counts.Pending > 0;
+    var inv = System.Globalization.CultureInfo.InvariantCulture;
+    var sentPct = counts.Total == 0 ? 0 : 100.0 * counts.Sent / counts.Total;
+    var failedPct = counts.Total == 0 ? 0 : 100.0 * counts.Failed / counts.Total;
+}
+
+<div class="mb-6 flex flex-wrap items-start justify-between gap-4">
+    <div class="min-w-0">
+        <a class="inline-flex items-center gap-1 text-xs font-medium text-slate-500 hover:text-slate-700" asp-action="Index">
+            <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" /></svg>
+            Campaigns
+        </a>
+        <div class="mt-1 flex flex-wrap items-center gap-3">
+            <h2 class="truncate text-2xl font-bold tracking-tight text-slate-900">@c.Name</h2>
+            <partial name="_StatusBadge" model="c.Status" />
+        </div>
+        <p class="mt-1 text-sm text-slate-600">Subject: <span class="font-medium text-slate-800">@c.Subject</span></p>
+        <p class="mt-1 text-xs text-slate-500">
+            Created @c.CreatedAt.ToLocalTime().ToString("g")
+            @if (c.StartedAt is not null) { <text>· Started @c.StartedAt.Value.ToLocalTime().ToString("g")</text> }
+            @if (c.CompletedAt is not null) { <text>· Finished @c.CompletedAt.Value.ToLocalTime().ToString("g")</text> }
+            @if (!string.IsNullOrEmpty(c.RecipientFileName)) { <text>· File: @c.RecipientFileName</text> }
+        </p>
+    </div>
+    <div class="flex flex-wrap items-center gap-2">
+        @if (c.IsActive)
+        {
+            <form asp-action="Cancel" asp-route-id="@c.Id" method="post" onsubmit="return confirm('Stop sending this campaign?');">
+                <button type="submit" class="btn btn-warning">
+                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M5.25 7.5A2.25 2.25 0 017.5 5.25h9a2.25 2.25 0 012.25 2.25v9a2.25 2.25 0 01-2.25 2.25h-9a2.25 2.25 0 01-2.25-2.25v-9z" /></svg>
+                    Stop campaign
+                </button>
+            </form>
+        }
+        else
+        {
+            <form asp-action="Delete" asp-route-id="@c.Id" method="post" onsubmit="return confirm('Delete this campaign and its report? This cannot be undone.');">
+                <button type="submit" class="btn btn-danger">Delete</button>
+            </form>
+            <a class="btn btn-secondary" asp-action="Edit" asp-route-id="@c.Id">
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125" /></svg>
+                Edit
+            </a>
+            @if (counts.Failed > 0)
+            {
+                <form asp-action="RetryFailed" asp-route-id="@c.Id" method="post" onsubmit="return confirm('Retry @counts.Failed failed recipient(s)?');">
+                    <button type="submit" class="btn btn-secondary" @(Model.SmtpConfigured ? "" : "disabled")>Retry failed</button>
+                </form>
+            }
+            <form asp-action="Run" asp-route-id="@c.Id" method="post" onsubmit="return confirm('Send this campaign to @counts.Pending pending recipient(s) now?');">
+                <button type="submit" class="btn btn-success" @(canRun ? "" : "disabled")>
+                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653z" /></svg>
+                    Run campaign
+                </button>
+            </form>
+        }
+    </div>
+</div>
+
+@if (!Model.SmtpConfigured)
+{
+    <div class="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
+        <span><span class="font-semibold">SMTP is not configured.</span> Connect a mail server before running campaigns.</span>
+        <a class="btn btn-warning btn-sm" asp-controller="Settings" asp-action="Smtp">Configure SMTP</a>
+    </div>
+}
+@if (!string.IsNullOrEmpty(c.LastError))
+{
+    <div class="mb-6 rounded-xl border p-4 text-sm @(c.Status == CampaignStatus.Failed ? "border-red-200 bg-red-50 text-red-800" : "border-slate-200 bg-slate-50 text-slate-700")">@c.LastError</div>
+}
+@if (Model.MissingPlaceholders.Count > 0)
+{
+    <div class="mb-6 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
+        The template uses placeholders that are not columns in the uploaded file; they will render empty:
+        @foreach (var p in Model.MissingPlaceholders) { <code class="rounded bg-amber-100 px-1">{{@p}}</code> }
+    </div>
+}
+
+<div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+    <div class="card card-body">
+        <p class="section-title">Recipients</p>
+        <p class="stat-value" data-count="total">@counts.Total</p>
+    </div>
+    <div class="card card-body">
+        <p class="section-title">Delivered</p>
+        <p class="stat-value text-emerald-600" data-count="sent">@counts.Sent</p>
+    </div>
+    <div class="card card-body">
+        <p class="section-title">Failed</p>
+        <p class="stat-value text-red-600" data-count="failed">@counts.Failed</p>
+    </div>
+    <div class="card card-body">
+        <p class="section-title">Pending</p>
+        <p class="stat-value text-slate-500" data-count="pending">@counts.Pending</p>
+    </div>
+</div>
+
+<div class="card card-body mt-4">
+    <div class="mb-2 flex flex-wrap items-center justify-between gap-2 text-sm">
+        <span class="text-slate-600">Progress · <span class="font-medium text-slate-900" data-progress-text>@counts.Processed / @counts.Total processed</span></span>
+        <span class="text-slate-600">
+            Delivery rate <span class="font-semibold text-slate-900" data-delivery-rate>@counts.DeliveryRate%</span>
+            @if (Model.ConcurrencyLevel > 0) { <span class="text-slate-400">· @Model.ConcurrencyLevel parallel connection(s)</span> }
+        </span>
+    </div>
+    <div class="flex h-3 overflow-hidden rounded-full bg-slate-100 @(c.IsActive ? "animate-pulse" : "")">
+        <div class="bg-emerald-500 transition-all" data-bar="sent" style="width:@sentPct.ToString(inv)%"></div>
+        <div class="bg-red-400 transition-all" data-bar="failed" style="width:@failedPct.ToString(inv)%"></div>
+    </div>
+</div>
+
+<div class="mt-6 grid gap-6 lg:grid-cols-3">
+    <div class="space-y-6">
+        <div class="card">
+            <div class="card-header"><h3 class="card-title">Recipients file</h3></div>
+            <div class="card-body">
+                @if (c.IsActive)
+                {
+                    <p class="text-sm text-slate-500">The recipient list cannot be changed while the campaign is running.</p>
+                }
+                else
+                {
+                    <form asp-action="Upload" asp-route-id="@c.Id" method="post" enctype="multipart/form-data" class="space-y-3">
+                        <label for="file" class="flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 px-4 py-6 text-center transition hover:border-brand-400 hover:bg-brand-50/40">
+                            <svg class="h-7 w-7 text-slate-400" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 16.5V9.75m0 0l3 3m-3-3l-3 3M6.75 19.5a4.5 4.5 0 01-1.41-8.775 5.25 5.25 0 0110.233-2.33 3 3 0 013.758 3.848A3.752 3.752 0 0118 19.5H6.75z" /></svg>
+                            <span class="mt-2 text-sm font-medium text-slate-700">Choose .csv or .xlsx</span>
+                            <span class="mt-2 text-xs font-medium text-brand-700" data-file-name="file">No file selected</span>
+                        </label>
+                        <input id="file" name="file" type="file" class="sr-only" accept=".csv,.xlsx,.txt" required data-file-input />
+                        <button type="submit" class="btn btn-secondary w-full">Upload recipients</button>
+                        <p class="hint">Header row with an <code class="rounded bg-slate-100 px-1">Email</code> column. Replaces the current list.</p>
+                    </form>
+                }
+                @if (Model.Columns.Count > 0)
+                {
+                    <div class="mt-4 border-t border-slate-100 pt-4">
+                        <p class="mb-2 text-xs font-medium text-slate-500">Columns available as placeholders</p>
+                        <div class="flex flex-wrap gap-1.5">
+                            @foreach (var column in Model.Columns)
+                            {
+                                <span class="badge bg-slate-50 text-slate-700 ring-slate-200">{{@column}}</span>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header"><h3 class="card-title">Export report</h3></div>
+            <div class="card-body flex flex-wrap gap-2">
+                <a class="btn btn-secondary btn-sm" asp-action="Export" asp-route-id="@c.Id">All recipients</a>
+                <a class="btn btn-secondary btn-sm text-emerald-700" asp-action="Export" asp-route-id="@c.Id" asp-route-status="Sent">Delivered only</a>
+                <a class="btn btn-secondary btn-sm text-red-700" asp-action="Export" asp-route-id="@c.Id" asp-route-status="Failed">Failed only</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="card lg:col-span-2">
+        <div class="card-header">
+            <h3 class="card-title">Email preview</h3>
+            <a class="text-sm font-medium text-brand-600 hover:text-brand-500" asp-action="Preview" asp-route-id="@c.Id" target="_blank">Open in new tab</a>
+        </div>
+        <div class="p-2">
+            <iframe class="preview-frame rounded-xl ring-1 ring-slate-200" src="@Url.Action("Preview", new { id = c.Id })" sandbox="" title="Email preview"></iframe>
+        </div>
+    </div>
+</div>
+
+<div class="card mt-6">
+    <div class="card-header">
+        <h3 class="card-title">Recipients <span class="font-normal text-slate-500">(@Model.FilteredCount)</span></h3>
+        <div class="inline-flex rounded-lg bg-slate-100 p-1 text-xs font-medium">
+            <a class="rounded-md px-3 py-1.5 @(Model.StatusFilter is null ? "bg-white text-slate-900 shadow-sm" : "text-slate-600 hover:text-slate-900")" asp-action="Details" asp-route-id="@c.Id">All</a>
+            <a class="rounded-md px-3 py-1.5 @(Model.StatusFilter == RecipientStatus.Pending ? "bg-white text-slate-900 shadow-sm" : "text-slate-600 hover:text-slate-900")" asp-action="Details" asp-route-id="@c.Id" asp-route-status="Pending">Pending</a>
+            <a class="rounded-md px-3 py-1.5 @(Model.StatusFilter == RecipientStatus.Sent ? "bg-white text-emerald-700 shadow-sm" : "text-slate-600 hover:text-slate-900")" asp-action="Details" asp-route-id="@c.Id" asp-route-status="Sent">Delivered</a>
+            <a class="rounded-md px-3 py-1.5 @(Model.StatusFilter == RecipientStatus.Failed ? "bg-white text-red-700 shadow-sm" : "text-slate-600 hover:text-slate-900")" asp-action="Details" asp-route-id="@c.Id" asp-route-status="Failed">Failed</a>
+        </div>
+    </div>
+    @if (Model.Recipients.Count == 0)
+    {
+        <div class="card-body py-10 text-center text-sm text-slate-500">No recipients@(Model.StatusFilter is null ? ". Upload a file to add some." : " with this status.")</div>
+    }
+    else
+    {
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-slate-200">
+                <thead class="bg-slate-50">
+                    <tr>
+                        <th class="th">Email</th>
+                        <th class="th">Name</th>
+                        <th class="th">Status</th>
+                        <th class="th">Sent at</th>
+                        <th class="th">Error</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    @foreach (var r in Model.Recipients)
+                    {
+                        <tr class="hover:bg-slate-50">
+                            <td class="td font-medium text-slate-900">@r.Email</td>
+                            <td class="td">@r.Name</td>
+                            <td class="td">
+                                @switch (r.Status)
+                                {
+                                    case RecipientStatus.Sent: <span class="badge bg-emerald-50 text-emerald-700 ring-emerald-200">Delivered</span> break;
+                                    case RecipientStatus.Failed: <span class="badge bg-red-50 text-red-700 ring-red-200">Failed</span> break;
+                                    default: <span class="badge bg-slate-50 text-slate-600 ring-slate-200">Pending</span> break;
+                                }
+                            </td>
+                            <td class="td whitespace-nowrap text-slate-500">@(r.SentAt?.ToLocalTime().ToString("g"))</td>
+                            <td class="td max-w-xs truncate text-xs text-red-600" title="@r.Error">@r.Error</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        @if (Model.TotalPages > 1)
+        {
+            <div class="flex items-center justify-between border-t border-slate-200 px-5 py-3">
+                <span class="text-xs text-slate-500">Page @Model.Page of @Model.TotalPages</span>
+                <div class="flex gap-2">
+                    <a class="btn btn-secondary btn-sm @(Model.Page <= 1 ? "pointer-events-none opacity-50" : "")" asp-action="Details" asp-route-id="@c.Id" asp-route-status="@Model.StatusFilter" asp-route-page="@(Model.Page - 1)">Previous</a>
+                    <a class="btn btn-secondary btn-sm @(Model.Page >= Model.TotalPages ? "pointer-events-none opacity-50" : "")" asp-action="Details" asp-route-id="@c.Id" asp-route-status="@Model.StatusFilter" asp-route-page="@(Model.Page + 1)">Next</a>
+                </div>
+            </div>
+        }
+    }
+</div>
+
+@section Scripts {
+    @if (c.IsActive)
+    {
+        <script>
+            (function () {
+                var url = '@Url.Action("Status", new { id = c.Id })';
+                function set(sel, value) { var el = document.querySelector(sel); if (el) el.textContent = value; }
+                function poll() {
+                    fetch(url, { headers: { 'Accept': 'application/json' } })
+                        .then(function (r) { return r.json(); })
+                        .then(function (s) {
+                            set('[data-count="total"]', s.total);
+                            set('[data-count="sent"]', s.sent);
+                            set('[data-count="failed"]', s.failed);
+                            set('[data-count="pending"]', s.pending);
+                            set('[data-progress-text]', (s.sent + s.failed) + ' / ' + s.total + ' processed');
+                            set('[data-delivery-rate]', s.deliveryRate + '%');
+                            set('[data-campaign-status]', s.status);
+                            var sentBar = document.querySelector('[data-bar="sent"]');
+                            var failedBar = document.querySelector('[data-bar="failed"]');
+                            if (sentBar && s.total) sentBar.style.width = (100 * s.sent / s.total) + '%';
+                            if (failedBar && s.total) failedBar.style.width = (100 * s.failed / s.total) + '%';
+                            if (s.isActive) { setTimeout(poll, 2500); } else { window.location.reload(); }
+                        })
+                        .catch(function () { setTimeout(poll, 5000); });
+                }
+                setTimeout(poll, 2000);
+            })();
+        </script>
+    }
+}

@@ -1,0 +1,24 @@
+@model CampaignEditViewModel
+@{
+    ViewData["Title"] = "Edit campaign";
+}
+
+<form asp-action="Edit" asp-route-id="@Model.Id" method="post" enctype="multipart/form-data">
+    <input type="hidden" asp-for="Id" />
+    <div class="mb-6 flex flex-wrap items-end justify-between gap-4">
+        <div>
+            <h2 class="text-2xl font-bold tracking-tight text-slate-900">Edit campaign</h2>
+            <p class="mt-1 text-sm text-slate-600">Changes apply to recipients that have not been sent yet.</p>
+        </div>
+        <div class="flex items-center gap-3">
+            <a class="btn btn-secondary" asp-action="Details" asp-route-id="@Model.Id">Cancel</a>
+            <button type="submit" class="btn btn-primary">Save changes</button>
+        </div>
+    </div>
+
+    <partial name="_CampaignForm" model="Model" />
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -1,0 +1,61 @@
+@{
+    ViewData["Title"] = "Email marketing campaigns";
+}
+
+<section class="relative overflow-hidden">
+    <div class="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(60%_60%_at_50%_0%,#e0e7ff_0%,transparent_70%)]"></div>
+    <div class="mx-auto max-w-7xl px-4 pb-20 pt-16 sm:px-6 lg:px-8 lg:pt-24">
+        <div class="mx-auto max-w-3xl text-center">
+            <span class="badge bg-brand-50 text-brand-700 ring-brand-200">Multi-tenant · Bring your own SMTP</span>
+            <h1 class="mt-6 text-4xl font-extrabold tracking-tight text-slate-900 sm:text-6xl">
+                Send email campaigns to your clients, <span class="text-brand-600">at scale</span>.
+            </h1>
+            <p class="mt-6 text-lg leading-8 text-slate-600">
+                Connect your SMTP server, upload a CSV or Excel list, write a template and send in bulk with
+                configurable parallelism. Every delivery and failure is reported live.
+            </p>
+            <div class="mt-10 flex items-center justify-center gap-3">
+                <a class="btn btn-primary px-6 py-3 text-base" asp-controller="Account" asp-action="Register">Get started free</a>
+                <a class="btn btn-secondary px-6 py-3 text-base" asp-controller="Account" asp-action="Login">Sign in</a>
+            </div>
+        </div>
+
+        <div class="mx-auto mt-20 grid max-w-5xl gap-6 sm:grid-cols-3">
+            <div class="card card-body">
+                <span class="flex h-11 w-11 items-center justify-center rounded-xl bg-brand-50 text-brand-600">
+                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M5.25 14.25h13.5m-13.5 0a3 3 0 01-3-3m3 3a3 3 0 100 6h13.5a3 3 0 100-6m-16.5-3a3 3 0 013-3h13.5a3 3 0 013 3m-19.5 0a4.5 4.5 0 01.9-2.7L5.737 5.1a3.375 3.375 0 012.7-1.35h7.126c1.062 0 2.062.5 2.7 1.35l2.587 3.45a4.5 4.5 0 01.9 2.7m0 0a3 3 0 01-3 3m0 3h.008v.008h-.008v-.008zm0-6h.008v.008h-.008v-.008zm-3 6h.008v.008h-.008v-.008zm0-6h.008v.008h-.008v-.008z" /></svg>
+                </span>
+                <h3 class="mt-4 text-base font-semibold text-slate-900">Your own SMTP</h3>
+                <p class="mt-2 text-sm leading-6 text-slate-600">Each account uses its own server, credentials, sender identity and concurrency level. Passwords are stored encrypted.</p>
+            </div>
+            <div class="card card-body">
+                <span class="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
+                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.375 19.5h17.25m-17.25 0a1.125 1.125 0 01-1.125-1.125M3.375 19.5h7.5c.621 0 1.125-.504 1.125-1.125m-9.75 0V5.625m0 12.75v-1.5c0-.621.504-1.125 1.125-1.125m18.375 2.625V5.625m0 12.75c0 .621-.504 1.125-1.125 1.125m1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125m0 3.75h-7.5A1.125 1.125 0 0112 18.375m9.75-12.75c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125m19.5 0v1.5c0 .621-.504 1.125-1.125 1.125M2.25 5.625v1.5c0 .621.504 1.125 1.125 1.125m0 0h17.25m-17.25 0h7.5c.621 0 1.125.504 1.125 1.125M3.375 8.25c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125m17.25-3.75h-7.5c-.621 0-1.125.504-1.125 1.125m8.625-1.125c.621 0 1.125.504 1.125 1.125v1.5c0 .621-.504 1.125-1.125 1.125m-17.25 0h7.5m-7.5 0c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125M12 10.875v-1.5m0 1.5c0 .621-.504 1.125-1.125 1.125M12 10.875c0 .621.504 1.125 1.125 1.125m-2.25 0c.621 0 1.125.504 1.125 1.125M13.125 12h7.5m-7.5 0c-.621 0-1.125.504-1.125 1.125M20.625 12c.621 0 1.125.504 1.125 1.125v1.5c0 .621-.504 1.125-1.125 1.125m-17.25 0h7.5M12 14.625v-1.5m0 1.5c0 .621-.504 1.125-1.125 1.125M12 14.625c0 .621.504 1.125 1.125 1.125m-2.25 0c.621 0 1.125.504 1.125 1.125m0 1.5v-1.5m0 0c0-.621.504-1.125 1.125-1.125m0 0h7.5" /></svg>
+                </span>
+                <h3 class="mt-4 text-base font-semibold text-slate-900">CSV and Excel lists</h3>
+                <p class="mt-2 text-sm leading-6 text-slate-600">Upload recipients from .csv or .xlsx files. Every column becomes a placeholder such as <code class="rounded bg-slate-100 px-1">{{Name}}</code>.</p>
+            </div>
+            <div class="card card-body">
+                <span class="flex h-11 w-11 items-center justify-center rounded-xl bg-amber-50 text-amber-600">
+                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" /></svg>
+                </span>
+                <h3 class="mt-4 text-base font-semibold text-slate-900">Live delivery reports</h3>
+                <p class="mt-2 text-sm leading-6 text-slate-600">Watch campaigns progress in real time and see which recipients were delivered or failed, and why.</p>
+            </div>
+        </div>
+
+        <div class="mx-auto mt-20 max-w-5xl">
+            <h2 class="text-center text-sm font-semibold uppercase tracking-wider text-slate-500">How it works</h2>
+            <ol class="mt-8 grid gap-6 sm:grid-cols-4">
+                @foreach (var step in new[] { ("1", "Create an account", "Your company gets an isolated workspace."), ("2", "Connect SMTP", "Add your mail server and choose the concurrency."), ("3", "Build a campaign", "Write the template and upload your client list."), ("4", "Run and track", "Send in parallel and follow the report.") })
+                {
+                    <li class="relative rounded-2xl border border-dashed border-slate-300 p-5">
+                        <span class="flex h-8 w-8 items-center justify-center rounded-full bg-slate-900 text-sm font-bold text-white">@step.Item1</span>
+                        <p class="mt-3 text-sm font-semibold text-slate-900">@step.Item2</p>
+                        <p class="mt-1 text-sm text-slate-600">@step.Item3</p>
+                    </li>
+                }
+            </ol>
+        </div>
+    </div>
+</section>

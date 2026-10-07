@@ -1,0 +1,69 @@
+@model CampaignEditViewModel
+
+<div asp-validation-summary="ModelOnly"></div>
+
+<div class="grid gap-6 lg:grid-cols-3">
+    <div class="space-y-6 lg:col-span-2">
+        <div class="card">
+            <div class="card-header"><h3 class="card-title">Basics</h3></div>
+            <div class="card-body grid gap-5 sm:grid-cols-5">
+                <div class="sm:col-span-2">
+                    <label asp-for="Name" class="label"></label>
+                    <input asp-for="Name" class="input" placeholder="Spring promotion" />
+                    <span asp-validation-for="Name"></span>
+                </div>
+                <div class="sm:col-span-3">
+                    <label asp-for="Subject" class="label"></label>
+                    <input asp-for="Subject" class="input" placeholder="{{Name}}, a special offer for you" />
+                    <span asp-validation-for="Subject"></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Email template</h3>
+                <span class="text-xs text-slate-500">HTML · values are HTML-encoded when sent</span>
+            </div>
+            <div class="card-body">
+                <div class="mb-3 flex flex-wrap items-center gap-2">
+                    <span class="text-xs font-medium text-slate-500">Insert placeholder:</span>
+                    <button type="button" class="badge placeholder-chip bg-brand-50 text-brand-700 ring-brand-200 hover:bg-brand-100" data-placeholder="Name">{{Name}}</button>
+                    <button type="button" class="badge placeholder-chip bg-brand-50 text-brand-700 ring-brand-200 hover:bg-brand-100" data-placeholder="Email">{{Email}}</button>
+                    @foreach (var column in Model.Columns.Where(c => !string.Equals(c, "Name", StringComparison.OrdinalIgnoreCase) && !string.Equals(c, "Email", StringComparison.OrdinalIgnoreCase)))
+                    {
+                        <button type="button" class="badge placeholder-chip bg-slate-50 text-slate-700 ring-slate-200 hover:bg-slate-100" data-placeholder="@column">{{@column}}</button>
+                    }
+                </div>
+                <textarea asp-for="BodyHtml" class="input code-editor" rows="18" spellcheck="false"></textarea>
+                <span asp-validation-for="BodyHtml"></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="space-y-6">
+        <div class="card">
+            <div class="card-header"><h3 class="card-title">Recipients file</h3></div>
+            <div class="card-body">
+                <label for="RecipientsFile" class="flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 px-4 py-8 text-center transition hover:border-brand-400 hover:bg-brand-50/40">
+                    <svg class="h-8 w-8 text-slate-400" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 16.5V9.75m0 0l3 3m-3-3l-3 3M6.75 19.5a4.5 4.5 0 01-1.41-8.775 5.25 5.25 0 0110.233-2.33 3 3 0 013.758 3.848A3.752 3.752 0 0118 19.5H6.75z" /></svg>
+                    <span class="mt-3 text-sm font-medium text-slate-700">Click to choose a file</span>
+                    <span class="mt-1 text-xs text-slate-500">.csv or .xlsx with a header row</span>
+                    <span class="mt-3 text-xs font-medium text-brand-700" data-file-name="RecipientsFile">No file selected</span>
+                </label>
+                <input asp-for="RecipientsFile" type="file" class="sr-only" accept=".csv,.xlsx,.txt" data-file-input />
+                <span asp-validation-for="RecipientsFile"></span>
+                <ul class="mt-4 space-y-1.5 text-xs text-slate-500">
+                    <li>A column named <code class="rounded bg-slate-100 px-1">Email</code> is required; <code class="rounded bg-slate-100 px-1">Name</code> is optional.</li>
+                    <li>Every other column is available as a placeholder.</li>
+                    <li>Uploading replaces the existing recipient list.</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="rounded-2xl bg-slate-900 p-5 text-slate-200">
+            <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Tip</p>
+            <p class="mt-2 text-sm leading-6">Use inline styles in your HTML. Most email clients ignore <code class="rounded bg-slate-800 px-1">&lt;style&gt;</code> blocks and external stylesheets.</p>
+        </div>
+    </div>
+</div>

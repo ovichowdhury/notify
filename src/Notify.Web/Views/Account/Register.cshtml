@@ -1,0 +1,48 @@
+@model RegisterViewModel
+@{
+    ViewData["Title"] = "Create account";
+}
+
+<div class="mx-auto flex max-w-md flex-col px-4 py-12 sm:py-16">
+    <div class="text-center">
+        <img src="~/images/logo-mark.svg" alt="Notify" class="mx-auto h-14 w-14" />
+        <h1 class="mt-5 text-2xl font-bold tracking-tight text-slate-900">Create your workspace</h1>
+        <p class="mt-2 text-sm text-slate-600">Each account is a separate tenant with its own SMTP settings and campaigns.</p>
+    </div>
+
+    <div class="card mt-8">
+        <div class="card-body sm:p-8">
+            <form asp-action="Register" method="post" class="space-y-5">
+                <div asp-validation-summary="ModelOnly"></div>
+                <div>
+                    <label asp-for="CompanyName" class="label"></label>
+                    <input asp-for="CompanyName" class="input" autocomplete="organization" placeholder="Acme Ltd." />
+                    <span asp-validation-for="CompanyName"></span>
+                </div>
+                <div>
+                    <label asp-for="Email" class="label"></label>
+                    <input asp-for="Email" class="input" autocomplete="email" placeholder="you@company.com" />
+                    <span asp-validation-for="Email"></span>
+                </div>
+                <div>
+                    <label asp-for="Password" class="label"></label>
+                    <input asp-for="Password" class="input" autocomplete="new-password" />
+                    <span asp-validation-for="Password"></span>
+                </div>
+                <div>
+                    <label asp-for="ConfirmPassword" class="label"></label>
+                    <input asp-for="ConfirmPassword" class="input" autocomplete="new-password" />
+                    <span asp-validation-for="ConfirmPassword"></span>
+                </div>
+                <button type="submit" class="btn btn-primary w-full py-2.5">Create account</button>
+            </form>
+        </div>
+    </div>
+    <p class="mt-6 text-center text-sm text-slate-600">
+        Already have an account? <a class="font-semibold text-brand-600 hover:text-brand-500" asp-action="Login">Sign in</a>
+    </p>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -1,0 +1,72 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build-and-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 9.0.x
+
+      - name: Restore
+        run: dotnet restore src/Notify.Web/Notify.Web.csproj
+
+      - name: Build
+        run: dotnet build src/Notify.Web/Notify.Web.csproj --configuration Release --no-restore -warnaserror
+
+      - name: Start app
+        working-directory: src/Notify.Web
+        env:
+          ASPNETCORE_ENVIRONMENT: Production
+          Kestrel__Endpoints__Http__Url: http://localhost:5600
+        run: |
+          nohup dotnet run --configuration Release --no-build > ../../app.log 2>&1 &
+          curl --silent --output /dev/null --retry 40 --retry-delay 2 --retry-all-errors --retry-connrefused http://localhost:5600/Account/Login
+
+      - name: Smoke test
+        run: bash scripts/smoke-test.sh http://localhost:5600 2525
+
+      - name: App log
+        if: always()
+        run: tail -n 100 app.log || true
+
+  docker:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build image and start stack
+        run: docker compose up -d --build
+
+      - name: Wait for health
+        run: |
+          for i in $(seq 1 30); do
+            s=$(docker inspect --format '{{.State.Health.Status}}' notify 2>/dev/null || echo starting)
+            [ "$s" = "healthy" ] && exit 0
+            sleep 3
+          done
+          echo "notify did not become healthy"; docker compose logs notify; exit 1
+
+      - name: Smoke test against container
+        env:
+          SINK_HOST: 172.17.0.1   # default docker0 bridge address of the runner host
+        run: bash scripts/smoke-test.sh http://localhost:5600 2525
+
+      - name: Logs
+        if: always()
+        run: docker compose logs notify | tail -n 100
+
+      - name: Tear down
+        if: always()
+        run: docker compose down -v

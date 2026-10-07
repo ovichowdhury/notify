@@ -1,0 +1,17 @@
+**/bin/
+**/obj/
+**/App_Data/
+**/wwwroot/uploads/
+.git/
+.github/
+.claude/
+.vs/
+.vscode/
+scripts/
+samples/
+*.md
+Dockerfile
+docker-compose*.yml
+.env
+.env.*
+!.env.example

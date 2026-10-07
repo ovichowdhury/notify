@@ -1,0 +1,23 @@
+@model CampaignStatus
+@{
+    var css = Model switch
+    {
+        CampaignStatus.Draft => "bg-slate-50 text-slate-600 ring-slate-200",
+        CampaignStatus.Queued => "bg-sky-50 text-sky-700 ring-sky-200",
+        CampaignStatus.Running => "bg-brand-50 text-brand-700 ring-brand-200",
+        CampaignStatus.Completed => "bg-emerald-50 text-emerald-700 ring-emerald-200",
+        CampaignStatus.Cancelled => "bg-amber-50 text-amber-700 ring-amber-200",
+        CampaignStatus.Failed => "bg-red-50 text-red-700 ring-red-200",
+        _ => "bg-slate-50 text-slate-600 ring-slate-200"
+    };
+    var dot = Model switch
+    {
+        CampaignStatus.Running => "bg-brand-500 animate-pulse",
+        CampaignStatus.Queued => "bg-sky-500",
+        CampaignStatus.Completed => "bg-emerald-500",
+        CampaignStatus.Cancelled => "bg-amber-500",
+        CampaignStatus.Failed => "bg-red-500",
+        _ => "bg-slate-400"
+    };
+}
+<span class="badge @css"><span class="h-1.5 w-1.5 rounded-full @dot"></span><span data-campaign-status>@Model</span></span>

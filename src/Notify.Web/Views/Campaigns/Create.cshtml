@@ -1,0 +1,23 @@
+@model CampaignEditViewModel
+@{
+    ViewData["Title"] = "New campaign";
+}
+
+<form asp-action="Create" method="post" enctype="multipart/form-data">
+    <div class="mb-6 flex flex-wrap items-end justify-between gap-4">
+        <div>
+            <h2 class="text-2xl font-bold tracking-tight text-slate-900">New campaign</h2>
+            <p class="mt-1 text-sm text-slate-600">Write the template now; you can upload recipients here or later from the campaign page.</p>
+        </div>
+        <div class="flex items-center gap-3">
+            <a class="btn btn-secondary" asp-action="Index">Cancel</a>
+            <button type="submit" class="btn btn-primary">Create campaign</button>
+        </div>
+    </div>
+
+    <partial name="_CampaignForm" model="Model" />
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

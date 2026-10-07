@@ -1,0 +1,43 @@
+@model LoginViewModel
+@{
+    ViewData["Title"] = "Sign in";
+}
+
+<div class="mx-auto flex max-w-md flex-col px-4 py-12 sm:py-16">
+    <div class="text-center">
+        <img src="~/images/logo-mark.svg" alt="Notify" class="mx-auto h-14 w-14" />
+        <h1 class="mt-5 text-2xl font-bold tracking-tight text-slate-900">Welcome back</h1>
+        <p class="mt-2 text-sm text-slate-600">Sign in to manage your campaigns.</p>
+    </div>
+
+    <div class="card mt-8">
+        <div class="card-body sm:p-8">
+            <form asp-action="Login" method="post" class="space-y-5">
+                <input type="hidden" asp-for="ReturnUrl" />
+                <div asp-validation-summary="ModelOnly"></div>
+                <div>
+                    <label asp-for="Email" class="label"></label>
+                    <input asp-for="Email" class="input" autocomplete="email" autofocus placeholder="you@company.com" />
+                    <span asp-validation-for="Email"></span>
+                </div>
+                <div>
+                    <label asp-for="Password" class="label"></label>
+                    <input asp-for="Password" class="input" autocomplete="current-password" />
+                    <span asp-validation-for="Password"></span>
+                </div>
+                <label class="flex items-center gap-2 text-sm text-slate-700">
+                    <input asp-for="RememberMe" class="h-4 w-4 rounded border-slate-300 text-brand-600 focus:ring-brand-600" />
+                    <span>Remember me</span>
+                </label>
+                <button type="submit" class="btn btn-primary w-full py-2.5">Sign in</button>
+            </form>
+        </div>
+    </div>
+    <p class="mt-6 text-center text-sm text-slate-600">
+        New here? <a class="font-semibold text-brand-600 hover:text-brand-500" asp-action="Register">Create an account</a>
+    </p>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
