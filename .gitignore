@@ -494,3 +494,6 @@ scripts/.tmp-smoke/
 
 # Docker Compose local overrides
 .env
+
+# Test results and coverage
+TestResults/

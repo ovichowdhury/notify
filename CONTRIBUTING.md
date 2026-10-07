@@ -25,18 +25,23 @@ a new tenant. The SQLite database and migrations are created automatically under
 
 ## Running the checks
 
-There is no unit-test project yet; the end-to-end smoke test is the regression suite and CI runs it:
-
 ```bash
-# terminal 1
-cd src/Notify.Web && dotnet run
-# terminal 2, repository root
-bash scripts/smoke-test.sh
+dotnet test            # repository root: unit, service and integration tests (xUnit, ~10 s, no external services)
 ```
 
-It registers throwaway tenants, configures SMTP against a local sink, imports a CSV, runs a campaign with
-concurrency 4 and verifies the report, the observed parallelism and tenant isolation. Please run it before
-opening a pull request, and extend it when you add behaviour.
+The test project lives in `src/Notify.Test`. Integration tests boot the real app with `WebApplicationFactory`
+against a temp SQLite file and send mail to an in-process fake SMTP server (`TestSupport/FakeSmtpServer.cs`), so
+they also cover the parallel sending pipeline. Add tests next to the layer you change (`Unit/`, `Services/`,
+`Integration/`); a new controller action needs at least one integration test plus a tenant-isolation case.
+
+The black-box smoke test against a running instance is still available and runs in CI as well:
+
+```bash
+cd src/Notify.Web && dotnet run     # terminal 1
+bash scripts/smoke-test.sh          # terminal 2, repository root
+```
+
+Please run `dotnet test` before opening a pull request.
 
 ## Where things live
 

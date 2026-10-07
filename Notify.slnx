@@ -1,5 +1,6 @@
 <Solution>
   <Folder Name="/src/">
+    <Project Path="src/Notify.Test/Notify.Test.csproj" />
     <Project Path="src/Notify.Web/Notify.Web.csproj" />
   </Folder>
 </Solution>

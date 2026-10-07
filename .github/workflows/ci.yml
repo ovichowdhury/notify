@@ -18,10 +18,20 @@ jobs:
           dotnet-version: 9.0.x
 
       - name: Restore
-        run: dotnet restore src/Notify.Web/Notify.Web.csproj
+        run: dotnet restore Notify.slnx
 
       - name: Build
-        run: dotnet build src/Notify.Web/Notify.Web.csproj --configuration Release --no-restore -warnaserror
+        run: dotnet build Notify.slnx --configuration Release --no-restore -warnaserror
+
+      - name: Unit and integration tests
+        run: dotnet test src/Notify.Test/Notify.Test.csproj --configuration Release --no-build --collect:"XPlat Code Coverage" --results-directory TestResults --logger "trx;LogFileName=tests.trx"
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: TestResults
 
       - name: Start app
         working-directory: src/Notify.Web

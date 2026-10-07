@@ -6,12 +6,18 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Notify is a multi-tenant email marketing campaign tool: ASP.NET Core 9 MVC (Razor views), EF Core 9 on SQLite,
 ASP.NET Core Identity, MailKit for SMTP, CsvHelper/ClosedXML for recipient imports, Tailwind CSS for the UI.
-Single project at `src/Notify.Web`; solution file is `Notify.slnx`. There is no unit-test project; the
-regression check is `bash scripts/smoke-test.sh` against a running app (it starts `scripts/smtp-sink.py` itself).
-CI (`.github/workflows/ci.yml`) builds with `-warnaserror` and runs that script.
+Web project at `src/Notify.Web`, xUnit tests at `src/Notify.Test` (both net9.0); solution file is `Notify.slnx`.
+`dotnet test` from the repo root runs ~200 unit, service and integration tests in about 10 s with no external
+services: `TestSupport/TestDatabase` gives each class a temp SQLite file, `TestSupport/FakeSmtpServer` is an
+in-process SMTP server that records messages and peak concurrent connections, and `Integration/NotifyWebFactory`
+boots the real app via `WebApplicationFactory<Program>` (DbContext options are swapped in `ConfigureTestServices`
+because Program reads the connection string before `Build()`). Filter with
+`--filter "FullyQualifiedName~CampaignRunnerTests"` or `--filter "Name~<TestMethod>"`.
+`bash scripts/smoke-test.sh` is the black-box check against a *running* app. CI builds with `-warnaserror`, runs
+`dotnet test` with coverage, then the smoke test on bare .NET and inside Docker.
 
-Project skills in `.claude/skills/` cover the recurring workflows: `run-app`, `add-migration`, `build-css`,
-`smoke-test`, `docker`. The README's Architecture section is the canonical description of the sending pipeline.
+Project skills in `.claude/skills/` cover the recurring workflows: `run-app`, `run-tests`, `add-migration`,
+`build-css`, `smoke-test`, `docker`. The README's Architecture section is the canonical description of the sending pipeline.
 
 ## Commands
 

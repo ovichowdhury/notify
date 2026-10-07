@@ -296,10 +296,28 @@ dotnet ef migrations add <Name> -o Data/Migrations   # after changing entities; 
 scripts/tailwindcss.exe -c src/Notify.Web/tailwind.config.js -i src/Notify.Web/Styles/app.css -o src/Notify.Web/wwwroot/css/tailwind.css --watch
 ```
 
-**Testing.** There is no unit-test project yet. `scripts/smoke-test.sh` is the end-to-end regression check and
-runs in CI: with the app running it registers tenants, saves SMTP settings pointing at `scripts/smtp-sink.py`,
-imports a CSV, sends a campaign with concurrency 4, asserts the report and the observed parallelism, and checks
-tenant isolation.
+**Testing.** `src/Notify.Test` is an xUnit project with three layers, all self-contained (temp SQLite files and an
+in-process fake SMTP server, no external services):
+
+| Folder | What it covers |
+| --- | --- |
+| `Unit/` | `TemplateRenderer`, `RecipientFileParser` (CSV/XLSX), `SmtpPasswordProtector`, `SmtpClientFactory`, queue and registry, model helpers |
+| `Services/` | `RecipientImportService`, `CampaignRunner` (parallel workers, cancellation, resume, auth, failures), `CampaignSenderService` (startup recovery, stop), `DbSeeder` |
+| `Integration/` | Every controller action through `WebApplicationFactory`: registration, login, profile, SMTP settings, campaign CRUD, upload, run, cancel, retry, export, tenant isolation |
+
+```bash
+dotnet test                                   # repository root, runs everything (~10 s)
+dotnet test --filter "FullyQualifiedName~Integration"            # one layer
+dotnet test --filter "FullyQualifiedName~CampaignRunnerTests"    # one class
+dotnet test --filter "Name~Run_CancellationStopsBetweenMessages" # one test
+dotnet test --collect:"XPlat Code Coverage" --results-directory TestResults   # Cobertura XML under TestResults/
+```
+
+For an HTML coverage report install ReportGenerator once (`dotnet tool install -g dotnet-reportgenerator-globaltool`)
+and run `reportgenerator -reports:TestResults/**/coverage.cobertura.xml -targetdir:TestResults/html`.
+
+`scripts/smoke-test.sh` remains as a black-box check against a *running* instance (local or Docker) and is also run
+by CI:
 
 ```bash
 cd src/Notify.Web && dotnet run          # terminal 1

@@ -96,3 +96,6 @@ app.MapControllerRoute(
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.Run();
+
+// Exposes the entry point to WebApplicationFactory<Program> in Notify.Test.
+public partial class Program { }
